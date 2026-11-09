@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# go tools installer v1.7.1 by lptech22
+# go tools installer v1.8.0 by lptech22
 
-GO_VERSION="1.7.1"
+GO_VERSION="1.8.0"
 GO_AUTHOR="lptech22"
 GO_URL="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
 LOG="$HOME/.go-install.log"
@@ -40,13 +40,13 @@ step() {
 gh_login() {
   echo
   echo "${BOLD}Login GitHub${RESET} ${DIM}(cukup sekali)${RESET}"
-  echo "${DIM}1. Buka link di browser${RESET}"
+  echo "${DIM}1. Copy link, lalu buka di browser${RESET}"
   echo "${DIM}2. Masukkan kode di bawah${RESET}"
   echo "${DIM}3. Tekan Authorize / Izinkan${RESET}"
   echo
   gh auth login -h github.com -p https -w 2>&1 | while IFS= read -r line; do
     case "$line" in
-      *"one-time code"*)
+      *"First copy your one-time code"*)
         echo "${BOLD}Kode:${RESET} ${YELLOW}${BOLD}${line##* }${RESET}"
         ;;
       *"login/device"*)
