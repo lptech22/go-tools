@@ -1,4 +1,4 @@
-GO_VERSION="1.5.0"
+GO_VERSION="1.6.0"
 GO_AUTHOR="lptech22"
 GO_ROOT="$HOME/storage/shared/Acode"
 GO_BM="$HOME/.go_bookmarks"
@@ -360,6 +360,43 @@ _go_clone() {
   fi
 }
 
+_go_update() {
+  local url="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
+  local tmp="$HOME/.go.sh.latest" latest ans
+  _info "Mengecek versi terbaru di GitHub..."
+  if ! curl -fsSL "$url" -o "$tmp" 2>/dev/null; then
+    rm -f "$tmp"
+    _err "Gagal mengunduh dari GitHub. Cek koneksi internet."
+    return 1
+  fi
+  latest=$(sed -n 's/^GO_VERSION="\(.*\)"$/\1/p' "$tmp" | head -1)
+  if [ -z "$latest" ]; then
+    rm -f "$tmp"
+    _err "File dari GitHub tidak valid, update dibatalkan."
+    return 1
+  fi
+  if cmp -s "$tmp" "$HOME/.go.sh"; then
+    rm -f "$tmp"
+    _ok "Sudah versi terbaru ${C_GREEN}(v$GO_VERSION)${C_RESET}."
+    return 0
+  fi
+  echo "${C_BOLD}Versi terpasang:${C_RESET} ${C_YELLOW}v$GO_VERSION${C_RESET}"
+  echo "${C_BOLD}Versi terbaru:${C_RESET}   ${C_GREEN}v$latest${C_RESET}"
+  read -r -p "${C_BOLD}Pasang sekarang?${C_RESET} ${C_DIM}[y/N]${C_RESET} " ans
+  case "$ans" in
+    y|Y)
+      cp "$HOME/.go.sh" "$HOME/.go.sh.bak" 2>/dev/null
+      mv "$tmp" "$HOME/.go.sh"
+      . "$HOME/.go.sh"
+      _ok "Update berhasil. Sekarang ${C_GREEN}v$GO_VERSION${C_RESET}. Backup lama: ${C_DIM}~/.go.sh.bak${C_RESET}"
+      ;;
+    *)
+      rm -f "$tmp"
+      _info "Update dibatalkan."
+      ;;
+  esac
+}
+
 _go_help_line() {
   printf " ${C_BLUE}%-16s${C_RESET} %s\n" "$1" "$2"
 }
@@ -386,8 +423,10 @@ go() {
       _go_help_line "go del nama"    "hapus bookmark"
       _go_help_line "go ss | go home" "penyimpanan HP / home Termux"
       _go_help_line "go version"     "tampilkan versi"
+      _go_help_line "go update"      "cek dan pasang versi terbaru dari GitHub"
       echo
       ;;
+    update) _go_update ;;
     acode) cd "$GO_ROOT" && _go_show || return 1 ;;
     ss) cd "$HOME/storage/shared" && _go_show || return 1 ;;
     home) cd "$HOME" && _go_show ;;
