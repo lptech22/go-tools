@@ -1,4 +1,4 @@
-GO_VERSION="1.7.1"
+GO_VERSION="1.8.0"
 GO_AUTHOR="lptech22"
 GO_ROOT="$HOME/storage/shared/Acode"
 GO_BM="$HOME/.go_bookmarks"
@@ -25,6 +25,8 @@ _go_safe() {
 _go_clear() {
   printf '\033[H\033[2J\033[3J'
 }
+
+alias c='printf "\033[H\033[2J\033[3J"'
 
 _go_short() {
   echo "${1/#$HOME/~}"
@@ -447,6 +449,7 @@ go() {
       echo
       _go_help_line "go"             "menu pilih folder (mulai dari Acode)"
       _go_help_line "go lokasi"      "detail lokasi sekarang (path lengkap)"
+      _go_help_line "c"              "bersihkan layar dan riwayat"
       _go_help_line "go acode"       "folder Acode"
       _go_help_line "go nama"        "proyek di Acode / bookmark"
       _go_help_line "go new nama"    "buat proyek baru"
@@ -462,6 +465,7 @@ go() {
       echo
       ;;
     lokasi) _go_lokasi ;;
+    c) _go_clear ;;
     update) _go_update ;;
     acode) cd "$GO_ROOT" && _go_show || return 1 ;;
     ss) cd "$HOME/storage/shared" && _go_show || return 1 ;;
