@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# go tools installer v1.7.0 by lptech22
+# go tools installer v1.7.1 by lptech22
 
-GO_VERSION="1.7.0"
+GO_VERSION="1.7.1"
 GO_AUTHOR="lptech22"
 GO_URL="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
 LOG="$HOME/.go-install.log"
@@ -34,6 +34,30 @@ step() {
   printf "\r${RED}✗${RESET} %s            \n" "$msg"
   echo "  ${DIM}Detail: $LOG${RESET}"
   return 1
+}
+
+# Login GitHub: hanya tampilkan panduan, kode, dan link
+gh_login() {
+  echo
+  echo "${BOLD}Login GitHub${RESET} ${DIM}(cukup sekali)${RESET}"
+  echo "${DIM}1. Buka link di browser${RESET}"
+  echo "${DIM}2. Masukkan kode di bawah${RESET}"
+  echo "${DIM}3. Tekan Authorize / Izinkan${RESET}"
+  echo
+  gh auth login -h github.com -p https -w 2>&1 | while IFS= read -r line; do
+    case "$line" in
+      *"one-time code"*)
+        echo "${BOLD}Kode:${RESET} ${YELLOW}${BOLD}${line##* }${RESET}"
+        ;;
+      *"login/device"*)
+        echo "${BOLD}Link:${RESET} ${BLUE}${line##* }${RESET}"
+        echo "${DIM}Menunggu persetujuan di browser...${RESET}"
+        ;;
+      *"Logged in as"*)
+        ok "Login berhasil sebagai ${BOLD}${line##* }${RESET}"
+        ;;
+    esac
+  done
 }
 
 echo
@@ -82,11 +106,7 @@ git config --global --get-all safe.directory 2>/dev/null | grep -qxF '*' || git 
 if gh auth status >/dev/null 2>&1; then
   ok "Sudah login GitHub"
 else
-  echo
-  info "Login GitHub: pilih ${BOLD}GitHub.com${RESET} → ${BOLD}HTTPS${RESET} → ${BOLD}Login with a web browser${RESET}"
-  info "Salin kode, buka link di browser, lalu tempel kodenya"
-  echo
-  gh auth login -h github.com -p https -w
+  gh_login
 fi
 
 if gh auth status >/dev/null 2>&1; then
