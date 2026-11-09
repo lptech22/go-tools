@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# go tools installer v1.8.0 by lptech22
+# go tools installer v1.8.1 by lptech22
 
-GO_VERSION="1.8.0"
+GO_VERSION="1.8.1"
 GO_AUTHOR="lptech22"
 GO_URL="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
 LOG="$HOME/.go-install.log"
@@ -127,5 +127,5 @@ fi
 echo
 echo "${GREEN}${BOLD}✓ go tools v$GO_VERSION siap${RESET}"
 echo
-warn "${BOLD}Tutup Termux lalu buka lagi${RESET}, atau ketik: ${BOLD}source ~/.bashrc${RESET}"
-echo "  Lalu coba: ${BLUE}go help${RESET}   atau   ${BLUE}go clone${RESET}"
+echo "${RED}${BOLD}! Tutup Termux lalu buka lagi${RESET}"
+echo " Untuk panduan penggunaan kirim perintah: ${BLUE}go help${RESET}"
