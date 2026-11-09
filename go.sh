@@ -1,3 +1,5 @@
+GO_VERSION="1.5.0"
+GO_AUTHOR="lptech22"
 GO_ROOT="$HOME/storage/shared/Acode"
 GO_BM="$HOME/.go_bookmarks"
 
@@ -292,8 +294,14 @@ _go_clone() {
 
 go() {
   case "$1" in
-    "") _go_browse ;;
+    "")
+      echo "go tools v$GO_VERSION by $GO_AUTHOR"
+      _go_browse
+      ;;
+    version|-v|--version) echo "go tools v$GO_VERSION by $GO_AUTHOR" ;;
     help)
+      echo "go tools v$GO_VERSION by $GO_AUTHOR"
+      echo
       echo "go              -> menu nomor (mulai dari Acode)"
       echo "go acode        -> folder Acode"
       echo "go nama         -> proyek di Acode / bookmark"
@@ -305,6 +313,7 @@ go() {
       echo "go list         -> daftar bookmark & proyek"
       echo "go del nama     -> hapus bookmark"
       echo "go ss | go home"
+      echo "go version      -> tampilkan versi"
       ;;
     acode) cd "$GO_ROOT" || return 1 ;;
     ss) cd "$HOME/storage/shared" || return 1 ;;
