@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# go tools installer v1.5.0 by lptech22
+# go tools installer v1.6.0 by lptech22
 
-GO_VERSION="1.5.0"
+GO_VERSION="1.6.0"
 GO_AUTHOR="lptech22"
 GO_URL="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
 LOG="$HOME/.go-install.log"
