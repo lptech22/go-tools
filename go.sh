@@ -1,4 +1,4 @@
-GO_VERSION="1.6.0"
+GO_VERSION="1.6.1"
 GO_AUTHOR="lptech22"
 GO_ROOT="$HOME/storage/shared/Acode"
 GO_BM="$HOME/.go_bookmarks"
@@ -34,26 +34,30 @@ _go_title() {
   echo "${C_BLUE}╰${bar}╯${C_RESET}"
 }
 
-# Tampilkan detail folder aktif (layar dibersihkan dulu, riwayat hilang)
+# Info git untuk folder aktif (diam saja kalau bukan folder git)
+_go_gitinfo() {
+  _go_safe
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 1
+  local br last changed
+  br=$(git symbolic-ref --short -q HEAD 2>/dev/null || echo "detached")
+  last=$(git log -1 --format='%h %s' 2>/dev/null)
+  changed=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+  echo "${C_DIM}Branch:${C_RESET} ${C_GREEN}$br${C_RESET}"
+  echo "${C_DIM}Commit:${C_RESET} ${C_YELLOW}${last:-belum ada}${C_RESET}"
+  if [ "$changed" -gt 0 ]; then
+    echo "${C_DIM}Status:${C_RESET} ${C_YELLOW}$changed file belum di-commit${C_RESET}"
+  else
+    echo "${C_DIM}Status:${C_RESET} ${C_GREEN}bersih${C_RESET}"
+  fi
+}
+
+# Detail folder aktif (layar dibersihkan dulu, riwayat hilang)
 _go_show() {
   clear
   _go_title
   echo
   echo "${C_DIM}Lokasi:${C_RESET} ${C_BLUE}$(_go_short "$PWD")${C_RESET}"
-  _go_safe
-  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    local br last changed
-    br=$(git symbolic-ref --short -q HEAD 2>/dev/null || echo "detached")
-    last=$(git log -1 --format='%h %s' 2>/dev/null)
-    changed=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
-    echo "${C_DIM}Branch:${C_RESET} ${C_GREEN}$br${C_RESET}"
-    echo "${C_DIM}Commit:${C_RESET} ${C_YELLOW}${last:-belum ada}${C_RESET}"
-    if [ "$changed" -gt 0 ]; then
-      echo "${C_DIM}Status:${C_RESET} ${C_YELLOW}$changed file belum di-commit${C_RESET}"
-    else
-      echo "${C_DIM}Status:${C_RESET} ${C_GREEN}bersih${C_RESET}"
-    fi
-  fi
+  _go_gitinfo
   echo
   echo "${C_BOLD}Isi folder:${C_RESET}"
   local f n=0
@@ -71,6 +75,7 @@ _go_show() {
   echo
 }
 
+# Menu pilih folder: nomor = masuk ke subfolder, . = buka folder ini
 _go_browse() {
   local start="$PWD" choice i d
   local -a dirs
@@ -84,6 +89,7 @@ _go_browse() {
     _go_title
     echo
     echo "${C_DIM}Lokasi:${C_RESET} ${C_BLUE}$(_go_short "$PWD")${C_RESET}"
+    _go_gitinfo
     echo
     i=1
     for d in "${dirs[@]}"; do
@@ -102,8 +108,6 @@ _go_browse() {
       *)
         if [ "$choice" -ge 1 ] && [ "$choice" -le ${#dirs[@]} ]; then
           cd "${dirs[$((choice-1))]}" || return 1
-          _go_show
-          return
         else
           _err "Nomor tidak ada"; sleep 1
         fi
