@@ -1,4 +1,4 @@
-GO_VERSION="1.6.1"
+GO_VERSION="1.7.0"
 GO_AUTHOR="lptech22"
 GO_ROOT="$HOME/storage/shared/Acode"
 GO_BM="$HOME/.go_bookmarks"
@@ -21,8 +21,25 @@ _go_safe() {
   git config --global --get-all safe.directory 2>/dev/null | grep -qxF '*' || git config --global --add safe.directory '*'
 }
 
+# Bersihkan layar DAN riwayat scroll
+_go_clear() {
+  printf '\033[H\033[2J\033[3J'
+}
+
 _go_short() {
   echo "${1/#$HOME/~}"
+}
+
+# Lokasi satu baris: kalau sempit, bagian awal diganti …
+_go_loc() {
+  local p cols avail
+  p=$(_go_short "$PWD")
+  cols=$(tput cols 2>/dev/null || echo "${COLUMNS:-40}")
+  avail=$((cols - 10))
+  if [ "${#p}" -gt "$avail" ] && [ "$avail" -gt 2 ]; then
+    p="…${p: -$((avail-1))}"
+  fi
+  echo "${C_DIM}Lokasi:${C_RESET} ${C_BLUE}$p${C_RESET}"
 }
 
 _go_title() {
@@ -51,12 +68,12 @@ _go_gitinfo() {
   fi
 }
 
-# Detail folder aktif (layar dibersihkan dulu, riwayat hilang)
+# Detail folder aktif (layar dan riwayat dibersihkan, lalu detail ditampilkan)
 _go_show() {
-  clear
+  _go_clear
   _go_title
   echo
-  echo "${C_DIM}Lokasi:${C_RESET} ${C_BLUE}$(_go_short "$PWD")${C_RESET}"
+  _go_loc
   _go_gitinfo
   echo
   echo "${C_BOLD}Isi folder:${C_RESET}"
@@ -75,6 +92,19 @@ _go_show() {
   echo
 }
 
+# Detail lengkap lokasi: path penuh tanpa dipotong
+_go_lokasi() {
+  _go_clear
+  _go_title
+  echo
+  echo "${C_DIM}Folder:${C_RESET} ${C_BOLD}$(basename "$PWD")${C_RESET}"
+  echo "${C_DIM}Path:${C_RESET}   ${C_BLUE}$(_go_short "$PWD")${C_RESET}"
+  echo "${C_DIM}Penuh:${C_RESET}  $PWD"
+  echo
+  _go_gitinfo
+  echo
+}
+
 # Menu pilih folder: nomor = masuk ke subfolder, . = buka folder ini
 _go_browse() {
   local start="$PWD" choice i d
@@ -85,10 +115,10 @@ _go_browse() {
     for d in */; do
       [ -d "$d" ] && dirs+=("${d%/}")
     done
-    clear
+    _go_clear
     _go_title
     echo
-    echo "${C_DIM}Lokasi:${C_RESET} ${C_BLUE}$(_go_short "$PWD")${C_RESET}"
+    _go_loc
     _go_gitinfo
     echo
     i=1
@@ -306,7 +336,7 @@ _go_clone() {
     return 1
   fi
 
-  clear
+  _go_clear
   _go_title
   echo
   echo "${C_BOLD}Repo GitHub kamu:${C_RESET}"
@@ -412,10 +442,11 @@ go() {
       echo "${C_BOLD}go tools${C_RESET} ${C_GREEN}v$GO_VERSION${C_RESET} ${C_DIM}by $GO_AUTHOR${C_RESET}"
       ;;
     help)
-      clear
+      _go_clear
       _go_title
       echo
       _go_help_line "go"             "menu pilih folder (mulai dari Acode)"
+      _go_help_line "go lokasi"      "detail lokasi sekarang (path lengkap)"
       _go_help_line "go acode"       "folder Acode"
       _go_help_line "go nama"        "proyek di Acode / bookmark"
       _go_help_line "go new nama"    "buat proyek baru"
@@ -430,6 +461,7 @@ go() {
       _go_help_line "go update"      "cek dan pasang versi terbaru dari GitHub"
       echo
       ;;
+    lokasi) _go_lokasi ;;
     update) _go_update ;;
     acode) cd "$GO_ROOT" && _go_show || return 1 ;;
     ss) cd "$HOME/storage/shared" && _go_show || return 1 ;;
