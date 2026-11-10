@@ -1,4 +1,4 @@
-GO_VERSION="1.9.1"
+GO_VERSION="1.9.3"
 GO_AUTHOR="lptech22"
 GO_ROOT="$HOME/storage/shared/Acode"
 GO_BM="$HOME/.go_bookmarks"
