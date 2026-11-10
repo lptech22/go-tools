@@ -5,16 +5,14 @@ Perintah `go` untuk Termux: pindah ke proyek di folder Acode, sinkron dengan Git
 ## Install
 
 ```
-curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/install.sh | bash
+source <(curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/install.sh)
 ```
 
-Lalu tutup dan buka Termux lagi.
+Setelah selesai, perintah `go` langsung bisa dipakai.
 
 ## Setup awal (sekali)
 
-1. `termux-setup-storage` lalu izinkan akses penyimpanan
-2. `git config --global user.name "nama"` dan `git config --global user.email "email"`
-3. `pkg install gh`, lalu `gh auth login`, lalu `gh auth setup-git`
+Installer sudah mengurus semuanya: paket `curl`, `git`, dan `gh`, izin penyimpanan HP, dan login GitHub.
 
 ## Perintah
 
@@ -22,6 +20,7 @@ Lalu tutup dan buka Termux lagi.
 |---|---|
 | `go` | Menu pilih folder mulai dari Acode |
 | `go nama` | Masuk ke proyek di Acode |
+| `go lokasi` | Detail lokasi sekarang (path lengkap) |
 | `go new nama` | Buat proyek baru |
 | `go clone` | Pilih repo GitHub dengan nomor, lalu clone |
 | `go pull` | Ambil versi terbaru dari GitHub |
@@ -29,6 +28,9 @@ Lalu tutup dan buka Termux lagi.
 | `go add nama` / `go del nama` | Simpan atau hapus bookmark folder |
 | `go list` | Daftar bookmark dan proyek |
 | `go ss` / `go home` | Ke penyimpanan HP / ke home Termux |
+| `go update` | Cek dan pasang versi terbaru |
+| `go version` | Tampilkan versi |
 | `go help` | Bantuan singkat |
+| `c` | Bersihkan layar dan riwayat |
 
 Folder proyek ada di `~/storage/shared/Acode`.

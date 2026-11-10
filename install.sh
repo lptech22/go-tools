@@ -1,7 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# go tools installer v1.8.1 by lptech22
+# go tools installer v1.8.2 by lptech22
+# Pakai: source <(curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/install.sh)
+# Dengan source, perintah go langsung aktif di sesi ini.
 
-GO_VERSION="1.8.1"
+GO_VERSION="1.8.2"
 GO_AUTHOR="lptech22"
 GO_URL="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
 LOG="$HOME/.go-install.log"
@@ -70,7 +72,7 @@ for p in curl git gh; do
   command -v "$p" >/dev/null 2>&1 || need+=("$p")
 done
 if [ ${#need[@]} -gt 0 ]; then
-  step "Pasang ${need[*]}" pkg install -y -o Dpkg::Options::=--force-confold "${need[@]}" || exit 1
+  step "Pasang ${need[*]}" pkg install -y -o Dpkg::Options::=--force-confold "${need[@]}" || { return 1 2>/dev/null || exit 1; }
 else
   ok "curl, git, gh sudah ada"
 fi
@@ -87,14 +89,14 @@ fi
 if [ ! -d "$HOME/storage/shared" ]; then
   fail "Izin penyimpanan belum aktif"
   info "Jalankan ${BOLD}termux-setup-storage${RESET}, izinkan, lalu ulangi install"
-  exit 1
+  { return 1 2>/dev/null || exit 1; }
 fi
 mkdir -p "$HOME/storage/shared/Acode"
 ok "Penyimpanan siap ${DIM}(Acode)${RESET}"
 
 # 3. Unduh dan pasang go.sh
 [ -f "$HOME/.go.sh" ] && cp "$HOME/.go.sh" "$HOME/.go.sh.bak"
-step "Unduh go tools v$GO_VERSION" curl -fsSL "$GO_URL" -o "$HOME/.go.sh.new" || exit 1
+step "Unduh go tools v$GO_VERSION" curl -fsSL "$GO_URL" -o "$HOME/.go.sh.new" || { return 1 2>/dev/null || exit 1; }
 mv "$HOME/.go.sh.new" "$HOME/.go.sh"
 grep -q ".go.sh" "$HOME/.bashrc" 2>/dev/null || echo '[ -f ~/.go.sh ] && . ~/.go.sh' >> "$HOME/.bashrc"
 ok "Perintah go terpasang"
@@ -124,8 +126,10 @@ else
   warn "Login GitHub belum selesai. Nanti jalankan: gh auth login"
 fi
 
+# Bersihkan fungsi bantuan, lalu aktifkan go di sesi ini
+unset -f ok fail warn info step gh_login 2>/dev/null
+. "$HOME/.go.sh"
+
 echo
 echo "${GREEN}${BOLD}✓ go tools v$GO_VERSION siap${RESET}"
-echo
-echo "${RED}${BOLD}! Tutup Termux lalu buka lagi${RESET}"
 echo " Untuk panduan penggunaan kirim perintah: ${BLUE}go help${RESET}"
