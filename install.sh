@@ -1,9 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# go tools installer v1.9.0 by lptech22
+# go tools installer v1.9.1 by lptech22
 # Pakai: source <(curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/install.sh)
 # Dengan source, perintah go langsung aktif di sesi ini.
 
-GO_VERSION="1.9.0"
+GO_VERSION="1.9.1"
 GO_AUTHOR="lptech22"
 GO_URL="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
 LOG="$HOME/.go-install.log"
@@ -22,14 +22,19 @@ info() { echo "${BLUE}→${RESET} $*"; }
 # step "pesan" perintah... : jalankan perintah dengan animasi spinner
 step() {
   local msg="$1"; shift
+  local jc=0 pid i=0 rc
+  case $- in *m*) jc=1 ;; esac
+  set +m
   "$@" >>"$LOG" 2>&1 </dev/null &
-  local pid=$! i=0
+  pid=$!
   while kill -0 "$pid" 2>/dev/null; do
     printf "\r${BLUE}%s${RESET} %s   " "${FRAMES[i]}" "$msg"
     i=$(( (i+1) % ${#FRAMES[@]} ))
     sleep 0.1
   done
-  if wait "$pid"; then
+  wait "$pid"; rc=$?
+  [ "$jc" -eq 1 ] && set -m
+  if [ "$rc" -eq 0 ]; then
     printf "\r${GREEN}✓${RESET} %s            \n" "$msg"
     return 0
   fi
@@ -38,7 +43,7 @@ step() {
   return 1
 }
 
-# Login GitHub: hanya tampilkan panduan, kode, dan link
+# Login GitHub: panduan hanya tampil selama login, lalu dihapus
 gh_login() {
   echo
   echo "${BOLD}Login GitHub${RESET} ${DIM}(cukup sekali)${RESET}"
@@ -55,11 +60,12 @@ gh_login() {
         echo "${BOLD}Link:${RESET} ${BLUE}${line##* }${RESET}"
         echo "${DIM}Menunggu persetujuan di browser...${RESET}"
         ;;
-      *"Logged in as"*)
-        ok "Login berhasil sebagai ${BOLD}${line##* }${RESET}"
-        ;;
     esac
   done
+  # Hapus blok panduan (9 baris) kalau login berhasil
+  if gh auth status >/dev/null 2>&1; then
+    printf '\033[9A\033[J'
+  fi
 }
 
 echo
@@ -105,22 +111,17 @@ ok "Perintah go terpasang"
 git config --global --get-all safe.directory 2>/dev/null | grep -qxF '*' || git config --global --add safe.directory '*'
 
 # 5. Login GitHub
-if gh auth status >/dev/null 2>&1; then
-  ok "Sudah login GitHub"
-else
+if ! gh auth status >/dev/null 2>&1; then
   gh_login
 fi
 
 if gh auth status >/dev/null 2>&1; then
   gh auth setup-git >/dev/null 2>&1
-  ok "Git terhubung ke GitHub"
-  if [ -z "$(git config --global user.name)" ]; then
-    login=$(gh api user --jq .login 2>/dev/null)
-    if [ -n "$login" ]; then
-      git config --global user.name "$login"
-      git config --global user.email "$login@users.noreply.github.com"
-      ok "Identitas Git: ${BOLD}$login${RESET}"
-    fi
+  login=$(gh api user --jq .login 2>/dev/null)
+  ok "Login GitHub: ${BOLD}$login${RESET}"
+  if [ -z "$(git config --global user.name)" ] && [ -n "$login" ]; then
+    git config --global user.name "$login"
+    git config --global user.email "$login@users.noreply.github.com"
   fi
 else
   warn "Login GitHub belum selesai. Nanti jalankan: gh auth login"
