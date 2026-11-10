@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# go tools installer v2.0.0 by lptech22
+# go tools installer v2.0.1 by lptech22
 # Pakai: source <(curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/install.sh)
 # Alpine: jalankan "bash" dulu, lalu perintah di atas.
 # Dengan source, perintah go langsung aktif di sesi ini.
 
-GO_VERSION="2.0.0"
+GO_VERSION="2.0.1"
 GO_AUTHOR="lptech22"
 GO_URL="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
 LOG="$HOME/.go-install.log"
@@ -32,7 +32,7 @@ else
 fi
 
 SUDO=""
-[ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1 && SUDO="sudo"
+command -v sudo >/dev/null 2>&1 && [ "$(id -u 2>/dev/null)" != "0" ] && SUDO="sudo"
 
 # Folder Acode: sama dengan penyimpanan Android bila ada, kalau tidak di home
 detect_acode() {

@@ -1,4 +1,4 @@
-GO_VERSION="2.0.0"
+GO_VERSION="2.0.1"
 GO_AUTHOR="lptech22"
 # Folder Acode: sama dengan penyimpanan Android bila ada, kalau tidak di home
 _go_detect_root() {
