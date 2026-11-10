@@ -1,9 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# go tools installer v1.9.1 by lptech22
+# go tools installer v1.9.3 by lptech22
 # Pakai: source <(curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/install.sh)
 # Dengan source, perintah go langsung aktif di sesi ini.
 
-GO_VERSION="1.9.1"
+GO_VERSION="1.9.3"
 GO_AUTHOR="lptech22"
 GO_URL="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
 LOG="$HOME/.go-install.log"
@@ -85,12 +85,14 @@ fi
 
 # 2. Izin penyimpanan HP
 if [ ! -d "$HOME/storage/shared" ]; then
-  warn "Tekan ${BOLD}IZINKAN${RESET} di pop-up penyimpanan."
+  info "Tekan ${BOLD}IZINKAN${RESET} di pop-up penyimpanan."
   termux-setup-storage
   for _ in $(seq 1 90); do
     [ -d "$HOME/storage/shared" ] && break
     sleep 1
   done
+  # Kalau sudah berhasil, hapus baris petunjuk tadi
+  [ -d "$HOME/storage/shared" ] && printf '\033[1A\033[2K'
 fi
 if [ ! -d "$HOME/storage/shared" ]; then
   fail "Izin penyimpanan belum aktif"
