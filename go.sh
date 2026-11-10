@@ -1,6 +1,16 @@
-GO_VERSION="1.9.3"
+GO_VERSION="2.0.0"
 GO_AUTHOR="lptech22"
-GO_ROOT="$HOME/storage/shared/Acode"
+# Folder Acode: sama dengan penyimpanan Android bila ada, kalau tidak di home
+_go_detect_root() {
+  if [ -d "$HOME/storage/shared" ]; then
+    echo "$HOME/storage/shared/Acode"
+  elif [ -d /storage/emulated/0 ]; then
+    echo "/storage/emulated/0/Acode"
+  else
+    echo "$HOME/Acode"
+  fi
+}
+GO_ROOT="$(_go_detect_root)"
 GO_BM="$HOME/.go_bookmarks"
 
 C_RESET=$'\033[0m'; C_BOLD=$'\033[1m'; C_DIM=$'\033[2m'
@@ -11,9 +21,8 @@ _err()  { echo "${C_RED}✗${C_RESET} $*"; }
 _warn() { echo "${C_YELLOW}!${C_RESET} $*"; }
 _info() { echo "${C_BLUE}→${C_RESET} $*"; }
 
-if [ -d "$HOME/storage/shared" ]; then
-  mkdir -p "$GO_ROOT"
-elif [ -t 1 ]; then
+mkdir -p "$GO_ROOT" 2>/dev/null
+if [ -n "$TERMUX_VERSION" ] && [ ! -d "$HOME/storage/shared" ] && [ -t 1 ]; then
   _warn "Akses penyimpanan HP belum diizinkan. Jalankan: termux-setup-storage"
 fi
 
@@ -479,7 +488,7 @@ go() {
     c) _go_clear ;;
     update) _go_update ;;
     acode) cd "$GO_ROOT" && _go_show || return 1 ;;
-    ss) cd "$HOME/storage/shared" && _go_show || return 1 ;;
+    ss) cd "$(dirname "$GO_ROOT")" && _go_show || return 1 ;;
     home) cd "$HOME" && _go_show ;;
     co) shift; _go_co "$@" ;;
     pull) _go_pull ;;

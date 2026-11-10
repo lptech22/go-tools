@@ -1,9 +1,10 @@
-#!/data/data/com.termux/files/usr/bin/bash
-# go tools installer v1.9.3 by lptech22
+#!/usr/bin/env bash
+# go tools installer v2.0.0 by lptech22
 # Pakai: source <(curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/install.sh)
+# Alpine: jalankan "bash" dulu, lalu perintah di atas.
 # Dengan source, perintah go langsung aktif di sesi ini.
 
-GO_VERSION="1.9.3"
+GO_VERSION="2.0.0"
 GO_AUTHOR="lptech22"
 GO_URL="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
 LOG="$HOME/.go-install.log"
@@ -18,6 +19,40 @@ warn() { echo "${YELLOW}!${RESET} $*"; }
 info() { echo "${BLUE}→${RESET} $*"; }
 
 : > "$LOG"
+
+# Deteksi lingkungan: termux, alpine, debian (Ubuntu), atau lainnya
+if [ -n "$TERMUX_VERSION" ] || [ -d /data/data/com.termux ]; then
+  OS_KIND="termux"
+elif [ -f /etc/alpine-release ]; then
+  OS_KIND="alpine"
+elif command -v apt-get >/dev/null 2>&1; then
+  OS_KIND="debian"
+else
+  OS_KIND="other"
+fi
+
+SUDO=""
+[ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1 && SUDO="sudo"
+
+# Folder Acode: sama dengan penyimpanan Android bila ada, kalau tidak di home
+detect_acode() {
+  if [ -d "$HOME/storage/shared" ]; then
+    echo "$HOME/storage/shared/Acode"
+  elif [ -d /storage/emulated/0 ]; then
+    echo "/storage/emulated/0/Acode"
+  else
+    echo "$HOME/Acode"
+  fi
+}
+
+pkg_install() {
+  case "$OS_KIND" in
+    termux) pkg install -y -o Dpkg::Options::=--force-confold "$@" ;;
+    alpine) $SUDO apk add --no-cache "$@" ;;
+    debian) $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "$@" ;;
+    *)      return 1 ;;
+  esac
+}
 
 # step "pesan" perintah... : jalankan perintah dengan animasi spinner
 step() {
@@ -72,19 +107,37 @@ echo
 echo "${BOLD}${BLUE}go tools${RESET} ${BOLD}v$GO_VERSION${RESET} ${DIM}by $GO_AUTHOR${RESET}"
 echo "${DIM}──────────────────────────────${RESET}"
 
-# 1. Paket yang dibutuhkan
+if [ "$OS_KIND" = "other" ]; then
+  fail "OS ini belum didukung (Termux, Alpine, atau Ubuntu/Debian)"
+  { return 1 2>/dev/null || exit 1; }
+fi
+
+# 1. Paket yang dibutuhkan (nama perintah:nama paket)
+if [ "$OS_KIND" = "alpine" ]; then
+  PAIRS="bash:bash curl:curl git:git gh:github-cli"
+else
+  PAIRS="curl:curl git:git gh:gh"
+fi
 need=()
-for p in curl git gh; do
-  command -v "$p" >/dev/null 2>&1 || need+=("$p")
+for pair in $PAIRS; do
+  cmd=${pair%%:*}; pk=${pair#*:}
+  command -v "$cmd" >/dev/null 2>&1 || need+=("$pk")
 done
 if [ ${#need[@]} -gt 0 ]; then
-  step "Pasang ${need[*]}" pkg install -y -o Dpkg::Options::=--force-confold "${need[@]}" || { return 1 2>/dev/null || exit 1; }
+  if [ "$OS_KIND" = "debian" ]; then
+    step "Perbarui daftar paket" $SUDO apt-get update -qq || { return 1 2>/dev/null || exit 1; }
+  fi
+  step "Pasang ${need[*]}" pkg_install "${need[@]}" || {
+    fail "Gagal memasang ${need[*]}"
+    info "Pasang manual lalu jalankan ulang install (gh: https://cli.github.com)"
+    { return 1 2>/dev/null || exit 1; }
+  }
 else
   ok "curl, git, gh sudah ada"
 fi
 
-# 2. Izin penyimpanan HP
-if [ ! -d "$HOME/storage/shared" ]; then
+# 2. Izin penyimpanan HP (hanya Termux)
+if [ "$OS_KIND" = "termux" ] && [ ! -d "$HOME/storage/shared" ]; then
   info "Tekan ${BOLD}IZINKAN${RESET} di pop-up penyimpanan."
   termux-setup-storage
   for _ in $(seq 1 90); do
@@ -94,19 +147,24 @@ if [ ! -d "$HOME/storage/shared" ]; then
   # Kalau sudah berhasil, hapus baris petunjuk tadi
   [ -d "$HOME/storage/shared" ] && printf '\033[1A\033[2K'
 fi
-if [ ! -d "$HOME/storage/shared" ]; then
+if [ "$OS_KIND" = "termux" ] && [ ! -d "$HOME/storage/shared" ]; then
   fail "Izin penyimpanan belum aktif"
   info "Jalankan ${BOLD}termux-setup-storage${RESET}, izinkan, lalu ulangi install"
   { return 1 2>/dev/null || exit 1; }
 fi
-mkdir -p "$HOME/storage/shared/Acode"
-ok "Penyimpanan siap ${DIM}(Acode)${RESET}"
+
+ACODE_DIR=$(detect_acode)
+mkdir -p "$ACODE_DIR"
+ok "Folder Acode siap ${DIM}($ACODE_DIR)${RESET}"
 
 # 3. Unduh dan pasang go.sh
 [ -f "$HOME/.go.sh" ] && cp "$HOME/.go.sh" "$HOME/.go.sh.bak"
 step "Unduh go tools v$GO_VERSION" curl -fsSL "$GO_URL" -o "$HOME/.go.sh.new" || { return 1 2>/dev/null || exit 1; }
 mv "$HOME/.go.sh.new" "$HOME/.go.sh"
 grep -q ".go.sh" "$HOME/.bashrc" 2>/dev/null || echo '[ -f ~/.go.sh ] && . ~/.go.sh' >> "$HOME/.bashrc"
+if [ "$OS_KIND" = "alpine" ]; then
+  grep -q ".go.sh" "$HOME/.profile" 2>/dev/null || echo '[ -f ~/.go.sh ] && . ~/.go.sh' >> "$HOME/.profile"
+fi
 ok "Perintah go terpasang"
 
 # 4. Pengaturan Git
@@ -130,7 +188,7 @@ else
 fi
 
 # Bersihkan fungsi bantuan, lalu aktifkan go di sesi ini
-unset -f ok fail warn info step gh_login 2>/dev/null
+unset -f ok fail warn info step gh_login pkg_install detect_acode 2>/dev/null
 . "$HOME/.go.sh"
 
 echo
