@@ -17,14 +17,20 @@ source <(curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/ins
 
 ### Alpine
 
-Jalankan `bash` dulu, karena installer dan `go` memakai bash:
+Jalankan dua baris ini, satu per satu:
 
 ```
-bash
-source <(curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/install.sh)
+curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/install.sh -o $HOME/install-go.sh
+bash $HOME/install-go.sh
 ```
 
-Installer akan memasang `bash`, `curl`, `git`, dan `gh` sesuai lingkungan. Setelah itu, perintah `go` langsung aktif di sesi tersebut.
+Installer akan memasang `bash`, `curl`, `git`, dan `gh` sesuai lingkungan. Setelah selesai, aktifkan `go` di sesi yang sedang terbuka dengan:
+
+```
+. ~/.go.sh
+```
+
+Alpine memakai cara ini karena cara `source <(...)` tidak selalu berjalan di terminal Acode.
 
 ## Yang dilakukan installer
 
