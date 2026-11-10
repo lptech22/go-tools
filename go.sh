@@ -1,4 +1,4 @@
-GO_VERSION="2.0.1"
+GO_VERSION="2.0.2"
 GO_AUTHOR="lptech22"
 # Folder Acode: sama dengan penyimpanan Android bila ada, kalau tidak di home
 _go_detect_root() {
@@ -36,6 +36,14 @@ _go_clear() {
 }
 
 alias c='printf "\033[H\033[2J\033[3J"'
+
+# Penyimpanan internal (/storage, /sdcard): data Git disimpan di home, folder proyek tetap di sini
+_go_on_sdcard() {
+  case "$GO_ROOT" in
+    /storage/*|/sdcard/*) return 0 ;;
+  esac
+  return 1
+}
 
 _go_short() {
   echo "${1/#$HOME/~}"
@@ -401,7 +409,12 @@ _go_clone() {
       _warn "Dilewati, folder sudah ada: $name"
       continue
     fi
-    if gh repo clone "$repo" "$target" >/dev/null; then
+    local -a gitflags=()
+    if _go_on_sdcard; then
+      mkdir -p "$HOME/.gitdirs"
+      gitflags=(-- --separate-git-dir "$HOME/.gitdirs/$name")
+    fi
+    if gh repo clone "$repo" "$target" "${gitflags[@]}" >/dev/null; then
       _ok "Berhasil: ${C_BOLD}$name${C_RESET}"
       last="$target"
     else
