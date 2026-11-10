@@ -1,4 +1,4 @@
-GO_VERSION="1.8.2"
+GO_VERSION="1.9.0"
 GO_AUTHOR="lptech22"
 GO_ROOT="$HOME/storage/shared/Acode"
 GO_BM="$HOME/.go_bookmarks"
@@ -129,6 +129,17 @@ _go_browse() {
       i=$((i+1))
     done
     [ ${#dirs[@]} -eq 0 ] && echo " ${C_DIM}(tidak ada subfolder)${C_RESET}"
+    local -a files=()
+    for d in *; do
+      [ -f "$d" ] && files+=("$d")
+    done
+    if [ ${#files[@]} -gt 0 ]; then
+      echo
+      echo "${C_BOLD}File:${C_RESET}"
+      for d in "${files[@]}"; do
+        printf " ${C_DIM}•${C_RESET} %s ${C_DIM}(%s)${C_RESET}\n" "$d" "$(ls -lh -- "$d" | awk '{print $5}')"
+      done
+    fi
     echo
     echo " ${C_DIM}0) naik   .) buka di sini   q) batal${C_RESET}"
     read -r -p "${C_BOLD}Pilih:${C_RESET} " choice

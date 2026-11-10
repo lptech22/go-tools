@@ -1,9 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# go tools installer v1.8.2 by lptech22
+# go tools installer v1.9.0 by lptech22
 # Pakai: source <(curl -fsSL https://raw.githubusercontent.com/lptech22/go-tools/main/install.sh)
 # Dengan source, perintah go langsung aktif di sesi ini.
 
-GO_VERSION="1.8.2"
+GO_VERSION="1.9.0"
 GO_AUTHOR="lptech22"
 GO_URL="https://raw.githubusercontent.com/lptech22/go-tools/main/go.sh"
 LOG="$HOME/.go-install.log"
